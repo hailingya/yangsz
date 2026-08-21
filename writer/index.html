@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>墨章 · 写作 — 纯净专注的本地小说创作工具</title>
+<meta name="description" content="墨章写作是一款专注于小说创作的本地写作软件，支持文件夹管理、章节合并、实时保存，让你的创作流畅无阻。">
+<style>
+:root {
+  --primary: #7C3AED;
+  --primary-light: #A78BFA;
+  --primary-dark: #6D28D9;
+  --primary-bg: #F5F3FF;
+  --bg: #FAFAFB;
+  --surface: #FFFFFF;
+  --border: #E5E7EB;
+  --text: #1F2937;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --gradient: linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, #6366F1 100%);
+  --gradient-soft: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 50%, #EEF2FF 100%);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 48px rgba(124, 58, 237, 0.12);
+  --shadow-xl: 0 24px 80px rgba(124, 58, 237, 0.16);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--primary); color: white; }
+
+/* ===== 导航栏 ===== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.nav.scrolled {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.nav-logo .logo-icon {
+  width: 32px; height: 32px;
+  background: var(--gradient);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.35);
+}
+
+.nav-logo .logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nav-logo .logo-text span { color: var(--primary); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+}
+
+.nav-links a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--primary); }
+
+.nav-cta {
+  padding: 8px 20px;
+  background: var(--primary);
+  color: white !important;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+}
+
+.nav-cta:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+}
+
+/* ===== Hero ===== */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 100px 24px 80px;
+  background: var(--gradient-soft);
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%);
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: -150px; right: -150px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%);
+  border-radius: 50%;
+  animation: float 10s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -20px) scale(1.05); }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--surface);
+  border: 1px solid var(--primary-light);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--primary);
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeInDown 0.6s ease;
+}
+
+.hero-badge .dot {
+  width: 8px; height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse 2s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.hero h1 {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 24px;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: fadeInUp 0.8s ease;
+}
+
+.hero h1 .highlight {
+  display: inline-block;
+  position: relative;
+}
+
+.hero h1 .highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 4px; left: 0; right: 0;
+  height: 12px;
+  background: rgba(124, 58, 237, 0.15);
+  border-radius: 4px;
+  z-index: -1;
+}
+
+.hero-sub {
+  font-size: 20px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  line-height: 1.7;
+  animation: fadeInUp 0.8s ease 0.15s both;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-hero.primary {
+  background: var(--gradient);
+  color: white;
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.35);
+}
+
+.btn-hero.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(124, 58, 237, 0.45);
+}
+
+.btn-hero.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-hero.secondary:hover {
+  border-color: var(--primary-light);
+  color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-hero svg { width: 20px; height: 20px; }
+
+.hero-stats {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  margin-top: 56px;
+  animation: fadeInUp 0.8s ease 0.45s both;
+}
+
+.hero-stat {
+  text-align: center;
+}
+
+.hero-stat .num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.hero-stat .label {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* ===== 界面预览 ===== */
+.preview {
+  position: relative;
+  max-width: 1100px;
+  margin: -60px auto 0;
+  padding: 0 24px;
+  z-index: 10;
+}
+
+.preview-frame {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  animation: fadeInUp 1s ease 0.5s both;
+}
+
+.preview-bar {
+  height: 36px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+.preview-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+}
+
+.preview-dot.r { background: #FF5F57; }
+.preview-dot.y { background: #FEBC2E; }
+.preview-dot.g { background: #28C840; }
+
+.preview-bar .url {
+  margin-left: 16px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.preview-content {
+  display: flex;
+  height: 480px;
+}
+
+.preview-editor {
+  flex: 1;
+  padding: 32px 40px;
+  font-family: "Noto Serif SC", "SimSun", serif;
+  font-size: 15px;
+  line-height: 2;
+  color: var(--text);
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-editor .title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+
+.preview-editor p {
+  margin-bottom: 14px;
+  color: var(--text-secondary);
+}
+
+.preview-editor p:first-letter {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.preview-sidebar {
+  width: 220px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  padding: 16px 12px;
+  overflow: hidden;
+}
+
+.preview-sidebar-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.preview-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.preview-file.active {
+  background: var(--primary-bg);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.preview-file svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ===== 特性区 ===== */
+.features {
+  padding: 120px 24px 80px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.section-header .eyebrow {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.section-header h2 {
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.section-header p {
+  font-size: 17px;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gradient);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.feature-card:hover::before { transform: scaleX(1); }
+
+.feature-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: var(--primary-bg);
+  color: var(--primary);
+}
+
+.feature-icon svg { width: 24px; height: 24px; }
+
+.feature-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.feature-card .tag {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--primary-bg);
+  color: var(--primary);
+}
+
+/* ===== 步骤区 ===== */
+.steps {
+  padding: 100px 24px;
+  background: var(--surface);
+}
+
+.steps-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  margin-bottom: 56px;
+  position: relative;
+}
+
+.step-item:last-child { margin-bottom: 0; }
+
+.step-item::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: 56px;
+  bottom: -40px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary-light), transparent);
+}
+
+.step-item:last-child::before { display: none; }
+
+.step-num {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--gradient);
+  color: white;
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.step-content { padding-top: 6px; }
+
+.step-content h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.step-content p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+.step-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.step-kbd kbd {
+  display: inline-block;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: monospace;
+  color: var(--text);
+  box-shadow: 0 2px 0 var(--border);
+}
+
+/* ===== CTA ===== */
+.cta {
+  padding: 100px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-bg {
+  position: absolute;
+  inset: 0;
+  background: var(--gradient);
+  z-index: 0;
+}
+
+.cta-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1), transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(255,255,255,0.08), transparent 50%);
+}
+
+.cta-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.cta h2 {
+  font-size: 40px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+
+.cta p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+
+.cta .btn-hero.primary {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.cta .btn-hero.primary:hover {
+  background: var(--bg);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.cta .btn-hero.secondary {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: none;
+}
+
+.cta .btn-hero.secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.5);
+  color: white;
+  transform: translateY(-3px);
+}
+
+/* ===== Footer ===== */
+.footer {
+  padding: 48px 24px 32px;
+  background: #111827;
+  text-align: center;
+}
+
+.footer-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.footer-logo .logo-icon {
+  width: 28px; height: 28px;
+  background: var(--gradient);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.footer-logo span {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.footer-logo span span { color: var(--primary-light); }
+
+.footer p {
+  font-size: 13px;
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+
+.footer .links {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.footer .links a {
+  font-size: 13px;
+  color: #9CA3AF;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer .links a:hover { color: var(--primary-light); }
+
+.footer .copyright {
+  font-size: 12px;
+  color: #4B5563;
+  padding-top: 20px;
+  border-top: 1px solid #1F2937;
+}
+
+/* ===== 动画 ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .hero h1 { font-size: 40px; }
+  .hero-sub { font-size: 17px; }
+  .hero-stats { gap: 24px; }
+  .hero-stat .num { font-size: 24px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .section-header h2 { font-size: 32px; }
+  .preview-content { flex-direction: column; height: auto; }
+  .preview-sidebar { width: 100%; border-left: none; border-top: 1px solid var(--border); padding: 12px; }
+  .preview-editor { padding: 24px; }
+  .cta h2 { font-size: 30px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 导航栏 -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">
+    <div class="logo-icon">墨</div>
+    <div class="logo-text">墨章 · <span>写作</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#features">功能特性</a>
+    <a href="#steps">使用指南</a>
+    <a href="墨章.exe" download="墨章.exe" class="nav-cta">立即体验</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      v1.0 已发布 · 纯本地运行，数据不出设备
+    </div>
+    <h1>专注创作，<span class="highlight">让文字自由流淌</span></h1>
+    <p class="hero-sub">
+      墨章写作是一款专为小说创作者打造的本地写作工具。<br>
+      文件夹管理、实时保存、章节合并、拖拽整理 —— 一切都在浏览器中完成。
+    </p>
+    <div class="hero-actions">
+      <a href="墨章.exe" download="墨章.exe" class="btn-hero primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        开始写作
+      </a>
+      <a href="#features" class="btn-hero secondary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        了解更多
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="num">100%</div>
+        <div class="label">本地运行</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">0</div>
+        <div class="label">注册要求</div>
+      </div>
+      <div class="hero-stat">
+        <div class="num">∞</div>
+        <div class="label">无限章节</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 界面预览 -->
+<div class="preview">
+  <div class="preview-frame">
+    <div class="preview-bar">
+      <span class="preview-dot r"></span>
+      <span class="preview-dot y"></span>
+      <span class="preview-dot g"></span>
+      <span class="url">墨章 · 写作</span>
+    </div>
+    <div class="preview-content">
+      <div class="preview-editor">
+        <div class="title">第一章 离别乌托的清晨</div>
+        <p>清晨的薄雾笼罩着乌托小镇，青石板路上还残留着昨夜的雨迹。林远背起行囊，最后一次回望这座生活了十八年的地方。</p>
+        <p>"真的要走吗？"身后传来一个轻柔的声音。是苏婉，她站在巷口，手中握着一本旧书，眼中映着晨光。</p>
+        <p>林远没有回头。他知道，如果回头，就再也迈不出这一步了。</p>
+        <p>"等我。"他只说了两个字，便大步走向了镇口的路。身后的晨钟敲响，像是在为他送行，又像是在挽留。</p>
+      </div>
+      <div class="preview-sidebar">
+        <div class="preview-sidebar-title">文件目录</div>
+        <div class="preview-file active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          第一章.md
+        </div>
+        <div class="preview-file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          第二章.md
+        </div>
+        <div class="preview-file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          第三章.md
+        </div>
+        <div class="preview-file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          人物设定.md
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 功能特性 -->
+<section class="features" id="features">
+  <div class="section-header reveal">
+    <span class="eyebrow">功能特性</span>
+    <h2>为小说创作而生的每个细节</h2>
+    <p>从文件管理到章节合并，从实时保存到拖拽整理，每个功能都围绕写作流程精心设计。</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>文件夹管理</h3>
+      <p>打开本地文件夹，递归展示所有 .md 和 .txt 文件。支持新建文件、新建文件夹、右键操作，一切如你所习惯。</p>
+      <span class="tag">.md / .txt</span>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19.5 21l-7.5-7.5L4.5 21M19.5 12l-7.5-7.5L4.5 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>实时保存</h3>
+      <p>按下 Ctrl+S 即可保存到原文件，切换文件时自动保存。编辑器底部实时显示字数和行数，掌控创作节奏。</p>
+      <span class="tag">Ctrl+S</span>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.75 7.5h16.5M3.75 7.5l1.5-3h13.5l1.5 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>一键打包合并</h3>
+      <p>将多个章节文件按顺序合并为完整小说。章节自动转为二级标题，支持选择性打包，可指定源文件目录。</p>
+      <span class="tag">智能排序</span>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.75 5.25l-7.5 7.5m0 0l7.5 7.5m-7.5-7.5H21" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>拖拽整理</h3>
+      <p>在文件树中拖拽文件或文件夹即可移动位置。从系统资源管理器拖入文件自动复制，支持递归复制整个目录。</p>
+      <span class="tag">拖拽即移动</span>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>纯本地运行</h3>
+      <p>所有数据都在你的设备上，无需注册、无需联网。基于浏览器 File System Access API，直接读写本地文件。</p>
+      <span class="tag">零隐私泄露</span>
+    </div>
+    <div class="feature-card reveal">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>沉浸式编辑</h3>
+      <p>衬线字体、舒适行距、左侧编辑右侧文件的双栏布局，让写作回归纯粹的文字体验，无广告无干扰。</p>
+      <span class="tag">专注模式</span>
+    </div>
+  </div>
+</section>
+
+<!-- 使用指南 -->
+<section class="steps" id="steps">
+  <div class="steps-inner">
+    <div class="section-header reveal">
+      <span class="eyebrow">使用指南</span>
+      <h2>三步开始你的创作</h2>
+      <p>无需安装，打开即用。</p>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>打开文件夹</h3>
+        <p>点击右上角「打开文件夹」按钮，选择你的小说工作目录。软件会自动扫描所有 .md 和 .txt 文件，并以目录树形式展示在右侧。</p>
+      </div>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>开始写作</h3>
+        <p>在左侧编辑区自由创作，衬线字体和舒适行距为你提供沉浸式体验。写作过程中随时按 Ctrl+S 保存，或切换文件时自动保存。</p>
+        <div class="step-kbd"><kbd>Ctrl</kbd> + <kbd>S</kbd> 快速保存</div>
+      </div>
+    </div>
+    <div class="step-item reveal">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>一键打包</h3>
+        <p>写作完成后，点击「一键打包」按钮。选择源文件目录，勾选要合并的章节，输入小说名称，即可生成包含二级标题的完整 Markdown 文件。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="cta-bg"></div>
+  <div class="cta-content">
+    <h2>准备好开始你的故事了吗？</h2>
+    <p>无需下载，无需注册。打开墨章写作，让灵感即刻落地为文字。</p>
+    <div class="hero-actions">
+      <a href="墨章.exe" download="墨章.exe" class="btn-hero primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        立即开始写作
+      </a>
+      <a href="#features" class="btn-hero secondary">查看功能</a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-logo">
+    <div class="logo-icon">墨</div>
+    <span>墨章 · <span>写作</span></span>
+  </div>
+  <p>纯净专注的本地小说创作工具</p>
+  <div class="links">
+    <a href="writer.html">立即体验</a>
+    <a href="#features">功能特性</a>
+    <a href="#steps">使用指南</a>
+  </div>
+  <div class="copyright">
+    © 2026 墨章写作 · 基于 File System Access API · 推荐 Chrome / Edge 浏览器
+  </div>
+</footer>
+
+<script>
+// 导航栏滚动效果
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+// 滚动揭示动画
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
