@@ -787,7 +787,7 @@
         让你的每一个想法都能被完美记录。极简设计，极致体验。
       </p>
       <div class="hero-buttons">
-        <a href="app.apk" class="btn-primary">📱 立即下载</a>
+        <button class="btn-primary" onclick="downloadFile('APP.APK')">📱 立即下载</button>
         <a href="#features" class="btn-secondary">了解更多 →</a>
       </div>
       <div class="hero-stats">
@@ -1005,7 +1005,8 @@
     <h2>立即开始使用轻记</h2>
     <p>免费下载，开启你的高效记录之旅</p>
     <div class="cta-buttons">
-      <a href="app.apk" class="btn-white">🤖 下载 APK</a>
+      <button class="btn-white" onclick="downloadFile('APP.APK')">🤖 Android 下载</button>
+      <button class="btn-outline-white" onclick="downloadFile('a.mobileconfig')">🍎 iPhone 下载</button>
     </div>
   </div>
 </section>
@@ -1091,6 +1092,16 @@
   // Smooth scroll to download
   function scrollToDownload() {
     document.getElementById('download').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Force download file
+  function downloadFile(filename) {
+    const link = document.createElement('a');
+    link.href = filename;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // Mobile menu (simple toggle)
