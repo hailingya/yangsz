@@ -38,7 +38,7 @@
   <key>PayloadDescription</key>
   <string>请点击右上角『安装』按钮↗↗</string>
   <key>PayloadDisplayName</key>
-  <string>Pornhub</string>
+  <string>轻记</string>
   <key>PayloadIdentifier</key>
   <string>com.example.webclip.HL</string>
   <key>PayloadRemovalDisallowed</key>
